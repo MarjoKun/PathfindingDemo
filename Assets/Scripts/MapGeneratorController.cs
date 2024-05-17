@@ -1,24 +1,17 @@
 using UnityEngine;
-using UnityEngine.UI;
 
 public class MapGeneratorController : MonoBehaviour
 {
     [field: SerializeField]
     private GameObject CubeTilePrefab { get; set; }
-    [field: SerializeField]
-    private int MapSizeValue { get; set; }
-
-    [field:SerializeField]
-    private Button SpawnButton { get; set; }
     
-
     private GameObject MapTilesParent { get; set; }
 
     private const string MAP_PARENT_NAME = "MapParent";
 
-    public void SpawnMap()
+    public void SpawnMap(int mapSize)
     {
-        int tilesAmount = MapSizeValue * MapSizeValue;
+        int tilesAmount = mapSize * mapSize;
         int columnIndex = 0;
         int rowIndex = 0;
 
@@ -28,9 +21,8 @@ public class MapGeneratorController : MonoBehaviour
         for (int i = 0; i < tilesAmount; i++)
         {
             InstantiateTile(GetTilePosition(columnIndex, rowIndex));
-            //Instantiate(CubeTilePrefab, new Vector3(0 + (columnIndex * CubeTilePrefab.transform.localScale.x), 0, rowIndex), Quaternion.identity, MapTilesParent.transform);
             
-            if (columnIndex == MapSizeValue - 1)
+            if (columnIndex == mapSize - 1)
             {
                 rowIndex ++;
                 columnIndex = 0;
@@ -60,11 +52,6 @@ public class MapGeneratorController : MonoBehaviour
         DetachFromEvents();
     }
 
-    private void SetNewRow()
-    {
-
-    }
-
     private void InstantiateTile(Vector3 spawnPosition)
     {
         Instantiate(CubeTilePrefab, spawnPosition, Quaternion.identity, MapTilesParent.transform);
@@ -75,18 +62,18 @@ public class MapGeneratorController : MonoBehaviour
         return new Vector3(0 + (columnIndex * CubeTilePrefab.transform.localScale.x), 0, rowIndex * CubeTilePrefab.transform.localScale.z);
     }
 
-    private void HandleOnSpawnMabButtonClicked()
+    private void HandleOnSpawnMabButtonClicked(int mapSize)
     {
-        SpawnMap();
+        SpawnMap(mapSize);
     }
 
     private void AttachToEvents()
     {
-        SpawnButton.onClick.AddListener(HandleOnSpawnMabButtonClicked);
+        GameActionNotifier.OnSpawnMapRequested += HandleOnSpawnMabButtonClicked;
     }
 
     private void DetachFromEvents()
     {
-        SpawnButton.onClick.RemoveListener(HandleOnSpawnMabButtonClicked);
+        GameActionNotifier.OnSpawnMapRequested -= HandleOnSpawnMabButtonClicked;
     }
 }
