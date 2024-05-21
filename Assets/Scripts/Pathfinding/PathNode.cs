@@ -1,30 +1,29 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
-public class PathNode
+namespace Logic.Pathfinding
 {
-    private Grid<PathNode> PathNodeGrid { get; set; }
-    public int nodeWidth { get; private set; }
-    public int nodeHeight { get; private set; }
-
-    public int GCost { get; set; }
-    public int HCost { get; set; }
-    public int FCost { get; set; }
-
-    public bool IsObstacle { get; set; }
-    public PathNode CameFromNode { get; set; }
-
-    public PathNode (Grid<PathNode> pathNodeGrid, int width, int height)
+    public class PathNode
     {
-        PathNodeGrid = pathNodeGrid;
-        nodeWidth = width;
-        nodeHeight = height;
-        IsObstacle = false;
-    }
+        private Grid<PathNode> PathNodeGrid { get; set; }
+        public int nodeWidth { get; private set; }
+        public int nodeHeight { get; private set; }
 
-    public void CalculateFCost()
-    {
-        FCost = GCost + HCost;
+        public int GCost { get; set; }
+        public int HCost { get; set; }
+        public int FCost { get; set; }
+
+        public bool IsObstacle { get; set; }
+        public PathNode CameFromNode { get; set; }
+
+        public PathNode(Grid<PathNode> pathNodeGrid, int width, int height)
+        {
+            PathNodeGrid = pathNodeGrid;
+            nodeWidth = width;
+            nodeHeight = height;
+            IsObstacle = false;
+        }
+
+        public void CalculateFCost()
+        {
+            FCost = GCost + HCost;
+        }
     }
 }

@@ -1,36 +1,40 @@
+using Logic.Pathfinding;
 using System;
 using System.Collections.Generic;
 
-public static class GameActionNotifier
+namespace Logic
 {
-    public static event Action<int> OnSpawnMapRequested = delegate { };
-    public static event Action OnCameraResetRequested = delegate { };
-    public static event Action<int, int> OnSpawnMapCompleted = delegate { };
-    public static event Action<List<PathNode>> OnPathFound = delegate { };
-    public static event Action OnPlayerStoppedMoving = delegate { };
-
-    public static void NotifyOnSpawnMapRequested(int mapSize)
+    public static class GameActionNotifier
     {
-        OnSpawnMapRequested.Invoke(mapSize);
-    }
+        public static event Action<int> OnSpawnMapRequested = delegate { };
+        public static event Action OnCameraResetRequested = delegate { };
+        public static event Action<int, int> OnSpawnMapCompleted = delegate { };
+        public static event Action<List<PathNode>> OnPathChanged = delegate { };
+        public static event Action OnPlayerStoppedMoving = delegate { };
 
-    public static void NotifyOnCameraResetRequested()
-    {
-        OnCameraResetRequested.Invoke();
-    }
+        public static void NotifyOnSpawnMapRequested(int mapSize)
+        {
+            OnSpawnMapRequested.Invoke(mapSize);
+        }
 
-    public static void NotifyOnSpawnMapCompleted(int mapWidth, int mapHeight)
-    {
-        OnSpawnMapCompleted.Invoke(mapWidth, mapHeight);
-    }
+        public static void NotifyOnCameraResetRequested()
+        {
+            OnCameraResetRequested.Invoke();
+        }
 
-    public static void NotifyOnPathFound(List<PathNode> pathNodesCollection)
-    {
-        OnPathFound.Invoke(pathNodesCollection);
-    }
+        public static void NotifyOnSpawnMapCompleted(int mapWidth, int mapHeight)
+        {
+            OnSpawnMapCompleted.Invoke(mapWidth, mapHeight);
+        }
 
-    public static void NotifyOnPlayerStoppedMoving()
-    {
-        OnPlayerStoppedMoving.Invoke();
+        public static void NotifyOnPathChanged(List<PathNode> pathNodesCollection)
+        {
+            OnPathChanged.Invoke(pathNodesCollection);
+        }
+
+        public static void NotifyOnPlayerStoppedMoving()
+        {
+            OnPlayerStoppedMoving.Invoke();
+        }
     }
 }

@@ -1,58 +1,104 @@
+using Logic;
+using Logic.Pathfinding;
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
-public class PlayerMovement : MonoBehaviour
+namespace Player
 {
-    public event Action OnPlayerStoppedMoving = delegate { };
-
-    [field: SerializeField]
-    private float MovementSpeedMultiplier { get; set; } = 1.0f;
-
-    private Vector3 CachedStartPositionTransform { get; set; }
-    private Vector3 MovementDestinationTransform { get; set; }
-
-    private float MovementStartTime { get; set; }
-    private float JourneyLength { get; set; }
-    private bool IsMovementEnabled { get; set; } = false;
-
-    public void MoveToDestionation(Vector3 destinationPosition)
+    public class PlayerMovement : MonoBehaviour
     {
-        MovementDestinationTransform = destinationPosition;
-        CachedStartPositionTransform = transform.position;
-        StartMovement();
-    }
+        public event Action OnPlayerStoppedMoving = delegate { };
 
-    public void SetStartPosition(Vector3 startPosition)
-    {
-        transform.position = startPosition;
-    }
+        [field: SerializeField]
+        private float MovementSpeedMultiplier { get; set; } = 1.0f;
 
-    private void Update()
-    {
-        if (IsMovementEnabled == true)
+        private Vector3 CachedDefaultPosition { get; set; }
+        private Vector3 CachedStartPosition { get; set; }
+        private Vector3 MovementDestination { get; set; }
+
+        private float MovementStartTime { get; set; }
+        private float JourneyLength { get; set; }
+        private bool IsMovementEnabled { get; set; } = false;
+
+        public void MoveToDestionation(Vector3 destinationPosition)
         {
-            float distanceCovered = (Time.time - MovementStartTime) * MovementSpeedMultiplier;
-            float fractionOfJourney = 0;
+            MovementDestination = destinationPosition;
+            CachedStartPosition = transform.position;
+            StartMovement();
+        }
 
-            if (distanceCovered != 0)
+        public void SetStartPosition(Vector3 startPosition)
+        {
+            transform.position = startPosition;
+        }
+
+        private void Start()
+        {
+            CachedDefaultPosition = transform.position;
+            AttachToEvents();
+        }
+
+        private void OnDestroy()
+        {
+            DetachFromEvents();
+        }
+
+        private void Update()
+        {
+            if (IsMovementEnabled == true)
             {
-                fractionOfJourney = distanceCovered / JourneyLength;
-            }
+                float distanceCovered = (Time.time - MovementStartTime) * MovementSpeedMultiplier;
+                float fractionOfJourney = 0;
 
-            transform.position = Vector3.Lerp(CachedStartPositionTransform, MovementDestinationTransform, fractionOfJourney);
+                if (distanceCovered != 0)
+                {
+                    fractionOfJourney = distanceCovered / JourneyLength;
+                }
 
-            if (fractionOfJourney >= 1.0f)
-            {
-                IsMovementEnabled = false;
-                OnPlayerStoppedMoving.Invoke();
+                transform.position = Vector3.Lerp(CachedStartPosition, MovementDestination, fractionOfJourney);
+
+                if (fractionOfJourney >= 1.0f)
+                {
+                    IsMovementEnabled = false;
+                    OnPlayerStoppedMoving.Invoke();
+                }
             }
         }
-    }
 
-    private void StartMovement()
-    {
-        MovementStartTime = Time.time;
-        JourneyLength = Vector3.Distance(CachedStartPositionTransform, MovementDestinationTransform);
-        IsMovementEnabled = true;
+        private void StopPlayerMovement()
+        {
+            IsMovementEnabled = false;
+            transform.position = CachedDefaultPosition;
+        }
+
+        private void StartMovement()
+        {
+            MovementStartTime = Time.time;
+            JourneyLength = Vector3.Distance(CachedStartPosition, MovementDestination);
+            IsMovementEnabled = true;
+        }
+
+        private void HandleOnSpawnMapRequested(int mapSize)
+        {
+            StopPlayerMovement();
+        }
+
+        private void HandleOnPathChanged(List<PathNode> pathNodeCollection)
+        {
+            StopPlayerMovement();
+        }
+
+        private void AttachToEvents()
+        {
+            GameActionNotifier.OnSpawnMapRequested += HandleOnSpawnMapRequested;
+            GameActionNotifier.OnPathChanged += HandleOnPathChanged;
+        }
+
+        private void DetachFromEvents()
+        {
+            GameActionNotifier.OnSpawnMapRequested -= HandleOnSpawnMapRequested;
+            GameActionNotifier.OnPathChanged -= HandleOnPathChanged;
+        }
     }
 }

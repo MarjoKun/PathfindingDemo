@@ -1,53 +1,55 @@
 using System;
-using UnityEngine;
 
-public class Grid<TGridObject>
+namespace Logic.Pathfinding
 {
-    private int GridWidth { get; set; }
-    private int GridHeight { get; set; }
-    private TGridObject[,] GridArray { get; set; }
-
-    public Grid(int width, int height, Func<Grid<TGridObject>, int, int, TGridObject> createGridObject)
+    public class Grid<TGridObject>
     {
-        GridWidth = width;
-        GridHeight = height;
+        private int GridWidth { get; set; }
+        private int GridHeight { get; set; }
+        private TGridObject[,] GridArray { get; set; }
 
-        GridArray = new TGridObject[GridWidth, GridHeight];
-
-        for (int x = 0; x < GridArray.GetLength(0); x++)
+        public Grid(int width, int height, Func<Grid<TGridObject>, int, int, TGridObject> createGridObject)
         {
-            for (int y = 0; y < GridArray.GetLength(1); y++)
+            GridWidth = width;
+            GridHeight = height;
+
+            GridArray = new TGridObject[GridWidth, GridHeight];
+
+            for (int x = 0; x < GridArray.GetLength(0); x++)
             {
-                GridArray[x, y] = createGridObject(this, x, y);
+                for (int y = 0; y < GridArray.GetLength(1); y++)
+                {
+                    GridArray[x, y] = createGridObject(this, x, y);
+                }
             }
         }
-    }
 
-    public int GetWidth()
-    {
-        return GridWidth;
-    }
-
-    public int GetHeight()
-    {
-        return GridHeight;
-    }
-
-    public void SetGridObject(int width, int height, TGridObject value)
-    {
-        if (width >= 0 && height >= 0 && width < GridWidth && height < GridHeight)
+        public int GetWidth()
         {
-            GridArray[width, height] = value;
-        }
-    }
-
-    public TGridObject GetGridObject(int width, int height)
-    {
-        if (width >= 0 && height >= 0 && width < GridWidth && height < GridHeight)
-        {
-            return GridArray[width, height];
+            return GridWidth;
         }
 
-        return default;
+        public int GetHeight()
+        {
+            return GridHeight;
+        }
+
+        public void SetGridObject(int width, int height, TGridObject value)
+        {
+            if (width >= 0 && height >= 0 && width < GridWidth && height < GridHeight)
+            {
+                GridArray[width, height] = value;
+            }
+        }
+
+        public TGridObject GetGridObject(int width, int height)
+        {
+            if (width >= 0 && height >= 0 && width < GridWidth && height < GridHeight)
+            {
+                return GridArray[width, height];
+            }
+
+            return default;
+        }
     }
 }

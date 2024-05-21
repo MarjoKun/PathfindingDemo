@@ -45,5 +45,3 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   <CubeTilePrefab>k__BackingField: {fileID: 4119276946351011080, guid: 474f0a3e0329fc84fba3454a387af177, type: 3}
-  <MapSizeValue>k__BackingField: 2
-  <SpawnButton>k__BackingField: {fileID: 0}

@@ -1,70 +1,81 @@
+using Logic;
+using Logic.Pathfinding;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PlayerPathfindingController : MonoBehaviour
+namespace Player
 {
-    [field: SerializeField]
-    private PlayerMovement BoundPlayerMovement { get; set; }
-
-    private List<PathNode> CurrentPathingNodesCollection { get; set; } = new List<PathNode>();
-
-    private int CurrentPathingIndex { get; set; } = 0;
-
-    public void StartPlayerMovement()
+    public class PlayerPathfindingController : MonoBehaviour
     {
-        MovePlayerToNextDestination();
-    }
+        [field: SerializeField]
+        private PlayerMovement BoundPlayerMovement { get; set; }
 
-    private void Start()
-    {
-        AttachToEvents();
-    }
+        private List<PathNode> CurrentPathingNodesCollection { get; set; } = new List<PathNode>();
 
-    private void OnDestroy()
-    {
-        DetachFromEvents();
-    }
+        private int CurrentPathingIndex { get; set; } = 0;
 
-    private void MovePlayerToNextDestination()
-    {
-        if (CurrentPathingNodesCollection.Count > CurrentPathingIndex)
+        public void StartPlayerMovement()
         {
-            Vector3 destinationVector = new Vector3(CurrentPathingNodesCollection[CurrentPathingIndex].nodeWidth, 0, CurrentPathingNodesCollection[CurrentPathingIndex].nodeHeight);
-
-            if (CurrentPathingIndex == 0)
-            {
-                BoundPlayerMovement.SetStartPosition(destinationVector);
-            }
-
-            BoundPlayerMovement.MoveToDestionation(destinationVector);
-            CurrentPathingIndex++;
+            MovePlayerToNextDestination();
         }
-        else
+
+        private void Start()
+        {
+            AttachToEvents();
+        }
+
+        private void OnDestroy()
+        {
+            DetachFromEvents();
+        }
+
+        private void MovePlayerToNextDestination()
+        {
+            if (CurrentPathingNodesCollection.Count > CurrentPathingIndex)
+            {
+                Vector3 destinationVector = new Vector3(CurrentPathingNodesCollection[CurrentPathingIndex].nodeWidth, 0, CurrentPathingNodesCollection[CurrentPathingIndex].nodeHeight);
+
+                if (CurrentPathingIndex == 0)
+                {
+                    BoundPlayerMovement.SetStartPosition(destinationVector);
+                }
+
+                BoundPlayerMovement.MoveToDestionation(destinationVector);
+                CurrentPathingIndex++;
+            }
+            else
+            {
+                ResetMovement();
+            }
+        }
+
+        private void ResetMovement()
         {
             CurrentPathingIndex = 0;
         }
-    }
 
-    private void HandleOnPathFound(List<PathNode> pathNodeCollection)
-    {
-        CurrentPathingNodesCollection.Clear();
-        CurrentPathingNodesCollection.AddRange(pathNodeCollection);
-    }
+        private void HandleOnPathChanged(List<PathNode> pathNodeCollection)
+        {
+            ResetMovement();
+            CurrentPathingNodesCollection.Clear();
+            CurrentPathingNodesCollection.AddRange(pathNodeCollection);
+        }
 
-    private void HandleOnPlayerStoppedMoving()
-    {
-        MovePlayerToNextDestination();
-    }
+        private void HandleOnPlayerStoppedMoving()
+        {
+            MovePlayerToNextDestination();
+        }
 
-    private void AttachToEvents()
-    {
-        GameActionNotifier.OnPathFound += HandleOnPathFound;
-        BoundPlayerMovement.OnPlayerStoppedMoving += HandleOnPlayerStoppedMoving;
-    }
+        private void AttachToEvents()
+        {
+            GameActionNotifier.OnPathChanged += HandleOnPathChanged;
+            BoundPlayerMovement.OnPlayerStoppedMoving += HandleOnPlayerStoppedMoving;
+        }
 
-    private void DetachFromEvents()
-    {
-        GameActionNotifier.OnPathFound -= HandleOnPathFound;
-        BoundPlayerMovement.OnPlayerStoppedMoving -= HandleOnPlayerStoppedMoving;
+        private void DetachFromEvents()
+        {
+            GameActionNotifier.OnPathChanged -= HandleOnPathChanged;
+            BoundPlayerMovement.OnPlayerStoppedMoving -= HandleOnPlayerStoppedMoving;
+        }
     }
 }

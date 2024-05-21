@@ -1,50 +1,69 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PathfindingController : MonoBehaviour
+namespace Logic.Pathfinding
 {
-    public List<PathNode> CurrentPathingNodesCollection { get; private set; } = new List<PathNode>();
-    private Pathfinding CachedPathfinding { get; set; }
-
-    public void FindNewPath(int startWidth, int startHeight, int endWidth, int endHeight)
+    public class PathfindingController : MonoBehaviour
     {
-        CurrentPathingNodesCollection.Clear();
-        CurrentPathingNodesCollection.AddRange(CachedPathfinding.FindPath(startWidth, startHeight, endWidth, endHeight));
-        GameActionNotifier.NotifyOnPathFound(CurrentPathingNodesCollection);
-    }
+        public List<PathNode> CurrentPathingNodesCollection { get; private set; } = new List<PathNode>();
+        private Pathfinding CachedPathfinding { get; set; }
 
-    public void SetPathNodeObstacle(int nodeWidth, int nodeHeight, bool isObstacle)
-    {
-        CachedPathfinding.GetNode(nodeWidth, nodeHeight).IsObstacle = isObstacle;
-    }
+        public void FindNewPath(int startWidth, int startHeight, int endWidth, int endHeight)
+        {
+            List<PathNode> cachedPathNodeCollection = CachedPathfinding.FindPath(startWidth, startHeight, endWidth, endHeight);
 
-    private void Start()
-    {
-        AttachToEvents();
-    }
+            if (cachedPathNodeCollection != null)
+            {
+                ClearCurrentPathing();
+                CurrentPathingNodesCollection.AddRange(CachedPathfinding.FindPath(startWidth, startHeight, endWidth, endHeight));
+                GameActionNotifier.NotifyOnPathChanged(CurrentPathingNodesCollection);
+            }
+            else
+            {
+                Debug.Log("Path couldn't be found!");
+            }
+        }
 
-    private void OnDestroy()
-    {
-        DetachFromEvents();
-    }
+        public void SetPathNodeObstacle(int nodeWidth, int nodeHeight, bool isObstacle)
+        {
+            ClearCurrentPathing();
+            CachedPathfinding.GetNode(nodeWidth, nodeHeight).IsObstacle = isObstacle;
+        }
 
-    private void CreateCurrentPathfinding(int mapWidth, int mapHeight)
-    {
-        CachedPathfinding = new Pathfinding(mapWidth, mapHeight);
-    }
+        public void ClearCurrentPathing()
+        {
+            CurrentPathingNodesCollection.Clear();
+            GameActionNotifier.NotifyOnPathChanged(CurrentPathingNodesCollection);
+        }
 
-    private void HandleOnSpawnMapCompleted(int mapWidth, int mapHeight)
-    {
-        CreateCurrentPathfinding(mapWidth, mapHeight);
-    }
+        private void Start()
+        {
+            AttachToEvents();
+        }
 
-    private void AttachToEvents()
-    {
-        GameActionNotifier.OnSpawnMapCompleted += HandleOnSpawnMapCompleted;
-    }
+        private void OnDestroy()
+        {
+            DetachFromEvents();
+        }
 
-    private void DetachFromEvents()
-    {
-        GameActionNotifier.OnSpawnMapCompleted -= HandleOnSpawnMapCompleted;
+        private void CreateCurrentPathfinding(int mapWidth, int mapHeight)
+        {
+            CachedPathfinding = new Pathfinding(mapWidth, mapHeight);
+        }
+
+        private void HandleOnSpawnMapCompleted(int mapWidth, int mapHeight)
+        {
+            CreateCurrentPathfinding(mapWidth, mapHeight);
+        }
+
+        private void AttachToEvents()
+        {
+            GameActionNotifier.OnSpawnMapCompleted += HandleOnSpawnMapCompleted;
+        }
+
+        private void DetachFromEvents()
+        {
+            GameActionNotifier.OnSpawnMapCompleted -= HandleOnSpawnMapCompleted;
+        }
     }
 }

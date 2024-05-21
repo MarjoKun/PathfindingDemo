@@ -44,3 +44,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c57bb49fc0cdbc44997444085819ba1e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  <MainCamera>k__BackingField: {fileID: 0}
+  <MaxRaycastDistance>k__BackingField: 200

@@ -2,124 +2,127 @@ using System;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-public class TileSelector : MonoBehaviour
+namespace Logic
 {
-    [field: SerializeField]
-    private Camera MainCamera { get; set; }
-    [field: SerializeField]
-    private float MaxRaycastDistance { get; set; } = 200.0f;
-
-    public event Action<TileController> OnStartTileSelected = delegate { };
-    public event Action<TileController> OnEndTileSelected = delegate { };
-    public event Action<TileController> OnObstacleTileStateChanged = delegate { };
-
-    private DestinationSelectorType CurrentDestinationSelectorType { get; set; } = DestinationSelectorType.NONE;
-
-    public void SetDestinationSelectorType(DestinationSelectorType newDestinationSelectorType)
+    public class TileSelector : MonoBehaviour
     {
-        CurrentDestinationSelectorType = newDestinationSelectorType;
-    }
+        [field: SerializeField]
+        private Camera MainCamera { get; set; }
+        [field: SerializeField]
+        private float MaxRaycastDistance { get; set; } = 200.0f;
 
-    private void Update()
-    {
-        if (Input.GetMouseButtonDown(0) == true)
+        public event Action<TileController> OnStartTileSelected = delegate { };
+        public event Action<TileController> OnEndTileSelected = delegate { };
+        public event Action<TileController> OnObstacleTileStateChanged = delegate { };
+
+        private DestinationSelectorType CurrentDestinationSelectorType { get; set; } = DestinationSelectorType.NONE;
+
+        public void SetDestinationSelectorType(DestinationSelectorType newDestinationSelectorType)
         {
-            if (EventSystem.current.IsPointerOverGameObject() == false)
-            {
-                SetPathingDestinationByType();
-            }
+            CurrentDestinationSelectorType = newDestinationSelectorType;
         }
 
-        if (Input.GetMouseButtonDown(1) == true)
+        private void Update()
         {
-            if (EventSystem.current.IsPointerOverGameObject() == false)
+            if (Input.GetMouseButtonDown(0) == true)
             {
-                GameObject hitGameObject = RaycastToHitGameObject();
-
-                if (hitGameObject != null)
+                if (EventSystem.current.IsPointerOverGameObject() == false)
                 {
-                    AttemptToChangeTileObstacleState(RaycastToHitGameObject());
+                    SetPathingDestinationByType();
+                }
+            }
+
+            if (Input.GetMouseButtonDown(1) == true)
+            {
+                if (EventSystem.current.IsPointerOverGameObject() == false)
+                {
+                    GameObject hitGameObject = RaycastToHitGameObject();
+
+                    if (hitGameObject != null)
+                    {
+                        AttemptToChangeTileObstacleState(RaycastToHitGameObject());
+                    }
                 }
             }
         }
-    }
 
-    private void SetPathingDestinationByType()
-    {
-        switch (CurrentDestinationSelectorType)
+        private void SetPathingDestinationByType()
         {
-            case DestinationSelectorType.NONE:
-                break;
-            case DestinationSelectorType.START_POINT:
-                AttemptToSetStartDestination();
-                break;
-            case DestinationSelectorType.END_POINT:
-                AttemptToSetEndDestination();
-                break;
+            switch (CurrentDestinationSelectorType)
+            {
+                case DestinationSelectorType.NONE:
+                    break;
+                case DestinationSelectorType.START_POINT:
+                    AttemptToSetStartDestination();
+                    break;
+                case DestinationSelectorType.END_POINT:
+                    AttemptToSetEndDestination();
+                    break;
+            }
         }
-    }
 
-    private void AttemptToChangeTileObstacleState(GameObject gameObject)
-    {
-        TileController cachedTileController = gameObject.GetComponent<TileController>();
-
-        if (cachedTileController != null)
+        private void AttemptToChangeTileObstacleState(GameObject gameObject)
         {
-            cachedTileController.ChangeTileObstacleState();
-            OnObstacleTileStateChanged.Invoke(cachedTileController);
-        }
-    }
-
-    private void AttemptToSetStartDestination()
-    {
-        GameObject hitGameObject = RaycastToHitGameObject();
-
-        if (hitGameObject != null)
-        {
-            TileController cachedTileController = hitGameObject.GetComponent<TileController>();
+            TileController cachedTileController = gameObject.GetComponent<TileController>();
 
             if (cachedTileController != null)
             {
-                OnStartTileSelected.Invoke(cachedTileController);
+                cachedTileController.ChangeTileObstacleState();
+                OnObstacleTileStateChanged.Invoke(cachedTileController);
             }
         }
-    }
 
-    private void AttemptToSetEndDestination()
-    {
-        GameObject hitGameObject = RaycastToHitGameObject();
-
-        if (hitGameObject != null)
+        private void AttemptToSetStartDestination()
         {
-            TileController cachedTileController = hitGameObject.GetComponent<TileController>();
+            GameObject hitGameObject = RaycastToHitGameObject();
 
-            if (cachedTileController != null)
+            if (hitGameObject != null)
             {
-                OnEndTileSelected.Invoke(cachedTileController);
+                TileController cachedTileController = hitGameObject.GetComponent<TileController>();
+
+                if (cachedTileController != null)
+                {
+                    OnStartTileSelected.Invoke(cachedTileController);
+                }
             }
         }
-    }
 
-    private GameObject RaycastToHitGameObject()
-    {
-        RaycastHit raycastHit;
-        Ray ray = MainCamera.ScreenPointToRay(Input.mousePosition);
-
-        if (Physics.Raycast(ray, out raycastHit, MaxRaycastDistance))
+        private void AttemptToSetEndDestination()
         {
-            if (raycastHit.transform != null)
+            GameObject hitGameObject = RaycastToHitGameObject();
+
+            if (hitGameObject != null)
             {
-                return raycastHit.transform.gameObject;
+                TileController cachedTileController = hitGameObject.GetComponent<TileController>();
+
+                if (cachedTileController != null)
+                {
+                    OnEndTileSelected.Invoke(cachedTileController);
+                }
             }
         }
 
-        return null;
-    }
+        private GameObject RaycastToHitGameObject()
+        {
+            RaycastHit raycastHit;
+            Ray ray = MainCamera.ScreenPointToRay(Input.mousePosition);
 
-    public enum DestinationSelectorType
-    {
-        NONE,
-        START_POINT,
-        END_POINT
+            if (Physics.Raycast(ray, out raycastHit, MaxRaycastDistance))
+            {
+                if (raycastHit.transform != null)
+                {
+                    return raycastHit.transform.gameObject;
+                }
+            }
+
+            return null;
+        }
+
+        public enum DestinationSelectorType
+        {
+            NONE,
+            START_POINT,
+            END_POINT
+        }
     }
 }

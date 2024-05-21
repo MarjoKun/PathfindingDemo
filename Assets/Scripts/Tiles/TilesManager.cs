@@ -1,191 +1,200 @@
+using Logic.Pathfinding;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class TilesManager : MonoBehaviour
+namespace Logic
 {
-    [field: SerializeField]
-    private TileSelector BoundTileSelector { get; set; }
-    [field: SerializeField]
-    private PathfindingController BoundPathfindingController { get; set; }
-    [field: SerializeField]
-    private MapGeneratorController BoundMapGeneratorController { get; set; }
-
-    public TileController CurrentStartDestinationTileController { get; private set; }
-    public TileController CurrentEndDestinationTileController { get; private set; }
-    private List<TileController> CurrentTileControllerCollection { get; set; } = new List<TileController>();
-
-    private void Start()
+    public class TilesManager : MonoBehaviour
     {
-        AttachToEvents();
-    }
+        [field: SerializeField]
+        private TileSelector BoundTileSelector { get; set; }
+        [field: SerializeField]
+        private PathfindingController BoundPathfindingController { get; set; }
+        [field: SerializeField]
+        private MapGeneratorController BoundMapGeneratorController { get; set; }
 
-    private void OnDestroy()
-    {
-        DetachFromEvents();
-    }
+        public TileController CurrentStartDestinationTileController { get; private set; }
+        public TileController CurrentEndDestinationTileController { get; private set; }
+        private List<TileController> CurrentTileControllerCollection { get; set; } = new List<TileController>();
 
-    private void SetNewStartDestinationTile(TileController tileController)
-    {
-        if (CurrentStartDestinationTileController != null)
+        private void Start()
         {
-            CurrentStartDestinationTileController.SetTileAsNeutral();
+            AttachToEvents();
         }
 
-        if (tileController.BoundTileData.CurrentTileState == TileData.TileState.OBSTACLE)
+        private void OnDestroy()
         {
-            ChangePathfindingObstacleState(tileController);
+            DetachFromEvents();
         }
 
-        CurrentStartDestinationTileController = tileController;
-        CurrentStartDestinationTileController.SetTileAsStartDestination();
-    }
-
-    private void SetNewEndDestinationTile(TileController tileController)
-    {
-        if (CurrentEndDestinationTileController != null)
+        private void SetNewStartDestinationTile(TileController tileController)
         {
-            CurrentEndDestinationTileController.SetTileAsNeutral();
+            AttemptToSetTileAsNeutral(CurrentStartDestinationTileController);
+            AttemptToUnsetPathNodeAsObstacle(tileController);
+
+            CurrentStartDestinationTileController = tileController;
+            CurrentStartDestinationTileController.SetTileAsStartDestination();
+            BoundPathfindingController.ClearCurrentPathing();
         }
 
-        if (tileController.BoundTileData.CurrentTileState == TileData.TileState.OBSTACLE)
+        private void SetNewEndDestinationTile(TileController tileController)
         {
-            ChangePathfindingObstacleState(tileController);
+            AttemptToSetTileAsNeutral(CurrentEndDestinationTileController);
+            AttemptToUnsetPathNodeAsObstacle(tileController);
+
+            CurrentEndDestinationTileController = tileController;
+            CurrentEndDestinationTileController.SetTileAsEndDestination();
+            BoundPathfindingController.ClearCurrentPathing();
         }
 
-        CurrentEndDestinationTileController = tileController;
-        CurrentEndDestinationTileController.SetTileAsEndDestination();
-    }
-
-    private void ChangePathfindingObstacleState(TileController tileController)
-    {
-        bool isObstacle = tileController.BoundTileData.CurrentTileState == TileData.TileState.OBSTACLE;
-        BoundPathfindingController.SetPathNodeObstacle(tileController.BoundTileData.WidthPosition, tileController.BoundTileData.HeightPosition, isObstacle);
-    }
-
-    private void InitializeTileController(GameObject instantiatedGameObject, int columnIndex, int rowIndex)
-    {
-        TileController cachedTileController = instantiatedGameObject.GetComponent<TileController>();
-
-        if (cachedTileController != null)
+        private void AttemptToSetTileAsNeutral(TileController tileController)
         {
-            cachedTileController.InitializeTileData(columnIndex, rowIndex);
-            CurrentTileControllerCollection.Add(cachedTileController);
+            if (tileController != null)
+            {
+                tileController.SetTileAsNeutral();
+            }
         }
-    }
 
-    private void ClearTileControllerCollection()
-    {
-        CurrentTileControllerCollection.Clear();
-    }
-
-    private void SetCurrentPathVisual(List<PathNode> pathNodeCollection)
-    {
-        if (pathNodeCollection.Count > 0)
+        private void AttemptToUnsetPathNodeAsObstacle(TileController tileController)
         {
-            TileController pathTileController = null;
+            if (tileController.BoundTileData.CurrentTileState == TileData.TileState.OBSTACLE)
+            {
+                ChangePathfindingObstacleState(tileController);
+            }
+        }
+
+        private void ChangePathfindingObstacleState(TileController tileController)
+        {
+            bool isObstacle = tileController.BoundTileData.CurrentTileState == TileData.TileState.OBSTACLE;
+            BoundPathfindingController.SetPathNodeObstacle(tileController.BoundTileData.WidthPosition, tileController.BoundTileData.HeightPosition, isObstacle);
+        }
+
+        private void InitializeTileController(GameObject instantiatedGameObject, int columnIndex, int rowIndex)
+        {
+            TileController cachedTileController = instantiatedGameObject.GetComponent<TileController>();
+
+            if (cachedTileController != null)
+            {
+                cachedTileController.InitializeTileData(columnIndex, rowIndex);
+                CurrentTileControllerCollection.Add(cachedTileController);
+            }
+        }
+
+        private void ClearTileControllerCollection()
+        {
+            CurrentTileControllerCollection.Clear();
+        }
+
+        private void SetCurrentPathVisual(List<PathNode> pathNodeCollection)
+        {
             ResetPathVisual();
 
-            for (int i = 0; pathNodeCollection.Count > i; i++)
+            if (pathNodeCollection.Count > 0)
             {
-                pathTileController = GetTileControllerByDimension(pathNodeCollection[i].nodeWidth, pathNodeCollection[i].nodeHeight);
+                TileController pathTileController = null;
 
-                if (pathTileController != null)
+                for (int i = 0; pathNodeCollection.Count > i; i++)
                 {
-                    if (CheckIfTileIsStartOrEndPoint(pathTileController) == false)
-                    {
-                        pathTileController.SetTileAsPath();
-                    }
+                    pathTileController = GetTileControllerByDimension(pathNodeCollection[i].nodeWidth, pathNodeCollection[i].nodeHeight);
 
-                    pathTileController = null;
+                    if (pathTileController != null)
+                    {
+                        if (CheckIfTileIsStartOrEndPoint(pathTileController) == false)
+                        {
+                            pathTileController.SetTileAsPath();
+                        }
+
+                        pathTileController = null;
+                    }
                 }
             }
         }
-    }
 
-    private void ResetPathVisual()
-    {
-        for (int i = 0; CurrentTileControllerCollection.Count > i; i++)
+        private void ResetPathVisual()
         {
-            if (CheckIfTileIsStartOrEndPoint(CurrentTileControllerCollection[i]) == false && CheckIfTileIsObstacle(CurrentTileControllerCollection[i]) == false)
+            for (int i = 0; CurrentTileControllerCollection.Count > i; i++)
             {
-                CurrentTileControllerCollection[i].SetTileAsNeutral();
-            }
-        }
-    }
-
-    private TileController GetTileControllerByDimension(int width, int height)
-    {
-        for (int i = 0; CurrentTileControllerCollection.Count > i; i++)
-        {
-            if (CurrentTileControllerCollection[i].BoundTileData.WidthPosition == width && CurrentTileControllerCollection[i].BoundTileData.HeightPosition == height)
-            {
-                return CurrentTileControllerCollection[i];
+                if (CheckIfTileIsStartOrEndPoint(CurrentTileControllerCollection[i]) == false && CheckIfTileIsObstacle(CurrentTileControllerCollection[i]) == false)
+                {
+                    CurrentTileControllerCollection[i].SetTileAsNeutral();
+                }
             }
         }
 
-        return null;
-    }
+        private TileController GetTileControllerByDimension(int width, int height)
+        {
+            for (int i = 0; CurrentTileControllerCollection.Count > i; i++)
+            {
+                if (CurrentTileControllerCollection[i].BoundTileData.WidthPosition == width && CurrentTileControllerCollection[i].BoundTileData.HeightPosition == height)
+                {
+                    return CurrentTileControllerCollection[i];
+                }
+            }
 
-    private bool CheckIfTileIsStartOrEndPoint(TileController tileController)
-    {
-        bool isStartPoint = tileController.BoundTileData.CurrentTileState == TileData.TileState.START_DESTINATION;
-        bool isEndPoint = tileController.BoundTileData.CurrentTileState == TileData.TileState.END_DESTINATION;
+            return null;
+        }
 
-        return isStartPoint || isEndPoint;
-    }
+        private bool CheckIfTileIsStartOrEndPoint(TileController tileController)
+        {
+            bool isStartPoint = tileController.BoundTileData.CurrentTileState == TileData.TileState.START_DESTINATION;
+            bool isEndPoint = tileController.BoundTileData.CurrentTileState == TileData.TileState.END_DESTINATION;
 
-    private bool CheckIfTileIsObstacle(TileController tileController)
-    {
-        return tileController.BoundTileData.CurrentTileState == TileData.TileState.OBSTACLE;
-    }
+            return isStartPoint || isEndPoint;
+        }
 
-    private void HandleOnStartTileSelected(TileController tileController)
-    {
-        SetNewStartDestinationTile(tileController);
-    }
+        private bool CheckIfTileIsObstacle(TileController tileController)
+        {
+            return tileController.BoundTileData.CurrentTileState == TileData.TileState.OBSTACLE;
+        }
 
-    private void HandleOnEndTileSelected(TileController tileController)
-    {
-        SetNewEndDestinationTile(tileController);
-    }
+        private void HandleOnStartTileSelected(TileController tileController)
+        {
+            SetNewStartDestinationTile(tileController);
+        }
 
-    private void HandleOnObstacleTileStateChanged(TileController tileController)
-    {
-        ChangePathfindingObstacleState(tileController);
-    }
+        private void HandleOnEndTileSelected(TileController tileController)
+        {
+            SetNewEndDestinationTile(tileController);
+        }
 
-    private void HandleOnTileInstantiated(GameObject instantiatedObject, int width, int height)
-    {
-        InitializeTileController(instantiatedObject, width, height);
-    }
+        private void HandleOnObstacleTileStateChanged(TileController tileController)
+        {
+            ChangePathfindingObstacleState(tileController);
+        }
 
-    private void HandleOnPathFound(List<PathNode> pathNodesCollection)
-    {
-        SetCurrentPathVisual(pathNodesCollection);
-    }
+        private void HandleOnTileInstantiated(GameObject instantiatedObject, int width, int height)
+        {
+            InitializeTileController(instantiatedObject, width, height);
+        }
 
-    private void HandleOnMapDestroyed()
-    {
-        ClearTileControllerCollection();
-    }
+        private void HandleOnPathChanged(List<PathNode> pathNodesCollection)
+        {
+            SetCurrentPathVisual(pathNodesCollection);
+        }
 
-    private void AttachToEvents()
-    {
-        BoundTileSelector.OnStartTileSelected += HandleOnStartTileSelected;
-        BoundTileSelector.OnEndTileSelected += HandleOnEndTileSelected;
-        BoundTileSelector.OnObstacleTileStateChanged += HandleOnObstacleTileStateChanged;
-        BoundMapGeneratorController.OnTileInstantiated += HandleOnTileInstantiated;
-        BoundMapGeneratorController.OnMapDestroyed += HandleOnMapDestroyed;
-        GameActionNotifier.OnPathFound += HandleOnPathFound;
-    }
+        private void HandleOnMapDestroyed()
+        {
+            ClearTileControllerCollection();
+        }
 
-    private void DetachFromEvents()
-    {
-        BoundTileSelector.OnStartTileSelected -= HandleOnStartTileSelected;
-        BoundTileSelector.OnEndTileSelected -= HandleOnEndTileSelected;
-        BoundTileSelector.OnObstacleTileStateChanged -= HandleOnObstacleTileStateChanged;
-        BoundMapGeneratorController.OnTileInstantiated -= HandleOnTileInstantiated;
-        BoundMapGeneratorController.OnMapDestroyed -= HandleOnMapDestroyed;
-        GameActionNotifier.OnPathFound -= HandleOnPathFound;
+        private void AttachToEvents()
+        {
+            BoundTileSelector.OnStartTileSelected += HandleOnStartTileSelected;
+            BoundTileSelector.OnEndTileSelected += HandleOnEndTileSelected;
+            BoundTileSelector.OnObstacleTileStateChanged += HandleOnObstacleTileStateChanged;
+            BoundMapGeneratorController.OnTileInstantiated += HandleOnTileInstantiated;
+            BoundMapGeneratorController.OnMapDestroyed += HandleOnMapDestroyed;
+            GameActionNotifier.OnPathChanged += HandleOnPathChanged;
+        }
+
+        private void DetachFromEvents()
+        {
+            BoundTileSelector.OnStartTileSelected -= HandleOnStartTileSelected;
+            BoundTileSelector.OnEndTileSelected -= HandleOnEndTileSelected;
+            BoundTileSelector.OnObstacleTileStateChanged -= HandleOnObstacleTileStateChanged;
+            BoundMapGeneratorController.OnTileInstantiated -= HandleOnTileInstantiated;
+            BoundMapGeneratorController.OnMapDestroyed -= HandleOnMapDestroyed;
+            GameActionNotifier.OnPathChanged -= HandleOnPathChanged;
+        }
     }
 }

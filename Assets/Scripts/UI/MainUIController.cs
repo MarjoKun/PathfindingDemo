@@ -1,3 +1,6 @@
+using Logic;
+using Logic.Pathfinding;
+using Player;
 using UnityEngine;
 
 namespace UI
