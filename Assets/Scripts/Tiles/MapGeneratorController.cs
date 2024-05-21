@@ -1,10 +1,16 @@
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class MapGeneratorController : MonoBehaviour
 {
+    public event Action<GameObject, int, int> OnTileInstantiated = delegate { };
+    public event Action OnMapDestroyed = delegate { };
+
     [field: SerializeField]
     private GameObject CubeTilePrefab { get; set; }
     
+    private List<TileController> CurrentTileControllerCollection { get; set; } = new List<TileController>();
     private GameObject MapTilesParent { get; set; }
 
     private const string MAP_PARENT_NAME = "MapParent";
@@ -20,8 +26,9 @@ public class MapGeneratorController : MonoBehaviour
 
         for (int i = 0; i < tilesAmount; i++)
         {
-            InstantiateTile(GetTilePosition(columnIndex, rowIndex));
-            
+            GameObject instantiatedTile = InstantiateTile(GetTilePosition(columnIndex, rowIndex));
+            OnTileInstantiated.Invoke(instantiatedTile, columnIndex, rowIndex);
+
             if (columnIndex == mapSize - 1)
             {
                 rowIndex ++;
@@ -32,13 +39,17 @@ public class MapGeneratorController : MonoBehaviour
                 columnIndex++;
             }
         }
+
+        GameActionNotifier.NotifyOnSpawnMapCompleted(mapSize, mapSize);
     }
 
     public void AttemptToDestroyMap()
     {
         if (MapTilesParent != null)
         {
+            CurrentTileControllerCollection.Clear();
             Destroy(MapTilesParent);
+            OnMapDestroyed.Invoke();
         }
     }
 
@@ -52,9 +63,9 @@ public class MapGeneratorController : MonoBehaviour
         DetachFromEvents();
     }
 
-    private void InstantiateTile(Vector3 spawnPosition)
+    private GameObject InstantiateTile(Vector3 spawnPosition)
     {
-        Instantiate(CubeTilePrefab, spawnPosition, Quaternion.identity, MapTilesParent.transform);
+        return Instantiate(CubeTilePrefab, spawnPosition, Quaternion.identity, MapTilesParent.transform);
     }
 
     private Vector3 GetTilePosition(int columnIndex, int rowIndex)
@@ -64,7 +75,14 @@ public class MapGeneratorController : MonoBehaviour
 
     private void HandleOnSpawnMabButtonClicked(int mapSize)
     {
-        SpawnMap(mapSize);
+        if (mapSize <= 400)
+        {
+            SpawnMap(mapSize);
+        }
+        else
+        {
+            Debug.Log("400 is the limit. Isn't it enough?");
+        }
     }
 
     private void AttachToEvents()

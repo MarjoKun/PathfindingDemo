@@ -132,10 +132,10 @@ MonoBehaviour:
   <SelectorDestination>k__BackingField: {fileID: 4491673845294758988}
   <BoundMeshRenderer>k__BackingField: {fileID: 869992941247052907}
   <NeutralTileColor>k__BackingField: {r: 1, g: 1, b: 1, a: 0}
-  <SelectedTileColor>k__BackingField: {r: 0, g: 0, b: 0, a: 0}
   <ObstacleTileColor>k__BackingField: {r: 0, g: 0, b: 0, a: 0}
-  <CalculatedOpenColor>k__BackingField: {r: 0.002625496, g: 0.5566038, b: 0.019570667, a: 0}
-  <CalculatedClosedColor>k__BackingField: {r: 0.5188679, g: 0, b: 0, a: 0}
+  <StartDestinationColor>k__BackingField: {r: 0.8867924, g: 0.859271, b: 0, a: 0}
+  <EndDestinationColor>k__BackingField: {r: 0, g: 0.043969806, b: 0.8018868, a: 0}
+  <PathColor>k__BackingField: {r: 0.022805165, g: 0.6132076, b: 0, a: 0}
 --- !u!65 &6693682940584898191
 BoxCollider:
   m_ObjectHideFlags: 0
