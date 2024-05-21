@@ -323,6 +323,50 @@ Camera:
   m_CorrespondingSourceObject: {fileID: 4497695786765980866, guid: 8197f880a50d73c4cbf422dca7bc5b08, type: 3}
   m_PrefabInstance: {fileID: 4341103971639305384}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1671416781
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1671416783}
+  - component: {fileID: 1671416782}
+  m_Layer: 0
+  m_Name: QuitApp
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1671416782
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1671416781}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4d21d762347447446953179fe37eec25, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!4 &1671416783
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1671416781}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 7.5718226, y: 11.005809, z: 0.66763735}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1826607600 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 4539176776576483234, guid: b51f50481574b6b459689644f6c1d509, type: 3}
@@ -697,5 +741,6 @@ SceneRoots:
   - {fileID: 1891337125416541868}
   - {fileID: 6218314900347093232}
   - {fileID: 608402301103780392}
+  - {fileID: 1671416783}
   - {fileID: 705507995}
   - {fileID: 849099287}
