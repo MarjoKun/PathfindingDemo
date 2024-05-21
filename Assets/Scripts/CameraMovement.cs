@@ -1,7 +1,7 @@
 using Logic;
 using UnityEngine;
 
-namespace Player
+namespace Utilities
 {
     public class CameraMovement : MonoBehaviour
     {
